@@ -3,7 +3,10 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+
+# SQLite
 *.sqlite3
+db.sqlite3
 
 
 env/
