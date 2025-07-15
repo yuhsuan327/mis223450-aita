@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: django-app
+    env: python
+    buildCommand: ""
+    startCommand: gunicorn system.wsgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: system.settings
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: django-app.onrender.com
