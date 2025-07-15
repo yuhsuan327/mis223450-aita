@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>註冊帳號</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    #teacher-code-group { display: none; }
+  </style>
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+  <div class="card p-4 shadow">
+    <h3 class="mb-4 text-primary">✍️ 註冊帳號</h3>
+
+    <form method="post">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+        {{ form.username }}
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+        {{ form.email }}
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+        {{ form.password1 }}
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.password2.id_for_label }}" class="form-label">Password confirmation</label>
+        {{ form.password2 }}
+      </div>
+
+      <!-- 角色選擇 -->
+      <div class="mb-3">
+        <label for="role" class="form-label">角色</label>
+        <select name="role" id="role" class="form-select" required>
+          <option value="">請選擇角色</option>
+          <option value="teacher">老師</option>
+          <option value="student">學生</option>
+        </select>
+      </div>
+
+      <!-- 教師驗證碼欄位 -->
+      <div class="mb-3" id="teacher-code-group">
+        <label for="teacher_code" class="form-label">教師驗證碼</label>
+        <input type="text" name="teacher_code" id="teacher_code" class="form-control" placeholder="請輸入教師驗證碼">
+      </div>
+
+      <button type="submit" class="btn btn-success w-100">註冊並登入</button>
+    </form>
+
+    <div class="text-center mt-3">
+      已有帳號？<a href="{% url 'login' %}">點我登入</a>
+    </div>
+  </div>
+</div>
+
+<!-- JS：動態顯示教師驗證碼 -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const roleSelect = document.getElementById('role');
+    const teacherCodeGroup = document.getElementById('teacher-code-group');
+
+    function toggleTeacherCode() {
+      teacherCodeGroup.style.display = roleSelect.value === 'teacher' ? 'block' : 'none';
+    }
+
+    roleSelect.addEventListener('change', toggleTeacherCode);
+    toggleTeacherCode();  // 初始狀態
+  });
+</script>
+</body>
+</html>

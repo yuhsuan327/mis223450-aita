@@ -1,0 +1,57 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>編輯課程</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+{% include 'navbar.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      ✏️ 編輯單元摘要
+    </div>
+    <div class="card-body">
+      <h5 class="card-title text-secondary">課程：{{ lecture.course.name }}</h5>
+      <p class="card-text"><strong>單元日期：</strong>{{ lecture.date }}</p>
+
+      <!-- ✅ Toast 彈窗（右下角） -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999; margin-bottom: 0;">
+  {% if messages %}
+    {% for message in messages %}
+    <div class="toast align-items-center text-bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          {{ message }}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="summary" class="form-label">單元摘要內容：</label>
+          <textarea class="form-control" name="summary" id="summary" rows="8" required>{{ lecture.summary }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-success">💾 儲存摘要</button>
+        <a href="{% url 'lecture_detail' lecture.id %}" class="btn btn-secondary">取消</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<!-- ✅ Bootstrap JS for toast -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual env
+venv/
+.env
+*.env
+
+# DB、暫存與媒體
+*.sqlite3
+*.log
+*.webm
+*.wav
+*.tmp
+media/
+staticfiles/
+
+# VS Code
+.vscode/
+
+# Migrations
+**/migrations/*.py[cod]
+!**/migrations/__init__.py

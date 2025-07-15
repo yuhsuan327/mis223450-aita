@@ -1,0 +1,11 @@
+<h2>學生弱點診斷報告</h2>
+<p>學生姓名：{{ student.name }}</p>
+
+<h3>待加強知識點：</h3>
+<ul>
+  {% for w in weaknesses %}
+    <li>{{ w.question__concept }} (錯誤次數：{{ w.wrong_count }} 次)</li>
+  {% empty %}
+    <li>目前沒有弱點紀錄</li>
+  {% endfor %}
+</ul>

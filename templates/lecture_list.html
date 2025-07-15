@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>課程總覽</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<!-- ✅ Navbar 導覽列 -->
+{% include 'navbar.html' %}
+
+
+
+
+<!-- ✅ 課程清單 -->
+<div class="container mt-5">
+  <div class="card p-4 shadow">
+    <h2 class="mb-4 text-primary">📚 課程總覽</h2>
+
+    <!-- 🔍 搜尋課程欄位 -->
+    <form method="get" class="mb-4 d-flex">
+      <input type="text" name="q" value="{{ query }}" class="form-control me-2" placeholder="搜尋摘要或逐字稿...">
+      <button type="submit" class="btn btn-outline-primary">搜尋</button>
+    </form>
+
+    {% if page_obj %}
+      <ul class="list-group">
+        {% for lec in page_obj %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+  <div>
+    <strong>{{ lec.course.name }}｜單元 #{{ lec.id }}</strong><br>
+    <p class="mt-1 text-muted">{{ lec.summary|default:"(尚未產生摘要)"|truncatechars:80 }}</p>
+    <small class="text-muted">📅 建立時間：{{ lec.date|date:"Y-m-d" }}</small>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    {% if lec.is_ready %}
+      <span class="badge bg-success">✅ 已完成</span>
+    {% else %}
+      <span class="badge bg-warning text-dark">⏳ 處理中</span>
+    {% endif %}
+
+    <a href="{% url 'lecture_detail' lec.id %}" class="btn btn-outline-primary btn-sm">查看摘要</a>
+    {% if user.profile.role == 'student' %}
+    <a href="{% url 'quiz' lec.id %}" class="btn btn-success btn-sm">作答題目</a>
+
+    {% if lec.id in answered_lecture_ids %}
+    <a href="{% url 'submission_result' lec.id %}" class="btn btn-outline-info btn-sm">查看解析</a>
+  {% endif %}
+    
+
+    {% elif user.profile.role == 'teacher' %}
+    <a href="{% url 'edit_summary' lec.id %}" class="btn btn-outline-secondary btn-sm">編輯摘要</a>
+    <a href="{% url 'lecture_submissions' lec.id %}" class="btn btn-outline-info btn-sm">作答紀錄</a>
+
+    {% endif %}
+
+    {% if request.user.profile.role == 'teacher' %}
+      <a href="{% url 'delete_lecture' lec.id %}"
+         class="btn btn-outline-danger btn-sm"
+         onclick="return confirm('確定要刪除這筆單元嗎？');">
+         刪除
+      </a>
+    {% endif %}
+  </div>
+</li>
+
+        {% endfor %}
+      </ul>
+
+      <!-- ✅ 分頁控制 -->
+      <nav aria-label="課程分頁" class="mt-4">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?q={{ query }}&page={{ page_obj.previous_page_number }}">上一頁</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">上一頁</span></li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+              <li class="page-item">
+                <a class="page-link" href="?q={{ query }}&page={{ num }}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?q={{ query }}&page={{ page_obj.next_page_number }}">下一頁</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">下一頁</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% else %}
+      {% if query %}
+        <p class="text-danger">❌ 找不到符合「<strong>{{ query }}</strong>」的課程。</p>
+      {% else %}
+        <p class="text-muted">目前尚無任何課程。</p>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+</body>
+</html>

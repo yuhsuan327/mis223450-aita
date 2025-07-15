@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>題目解析 - {{ lecture.course.name }} 單元 #{{ lecture.id }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+{% include 'navbar.html' %}
+<div class="container mt-5">
+  <div class="card p-4 shadow">
+    <h3 class="mb-4 text-primary">🧪 題目解析 - {{ lecture.course.name }} 單元 #{{ lecture.id }}</h3>
+
+    {% for r in results %}
+  <div class="mb-4">
+    <h5 class="mb-2">Q{{ forloop.counter }}. {{ r.question.question_text }}</h5>
+
+    {% if r.question.question_type == 'mcq' %}
+      <ul class="list-group mb-2">
+        <li class="list-group-item {% if r.student_answer == 'A' %}list-group-item-info{% endif %}">A. {{ r.question.option_a }}</li>
+        <li class="list-group-item {% if r.student_answer == 'B' %}list-group-item-info{% endif %}">B. {{ r.question.option_b }}</li>
+        <li class="list-group-item {% if r.student_answer == 'C' %}list-group-item-info{% endif %}">C. {{ r.question.option_c }}</li>
+        <li class="list-group-item {% if r.student_answer == 'D' %}list-group-item-info{% endif %}">D. {{ r.question.option_d }}</li>
+      </ul>
+    
+    {% elif r.question.question_type == 'tf' %}
+      <ul class="list-group mb-2">
+        <li class="list-group-item {% if r.student_answer == 'True' %}list-group-item-info{% endif %}">⭕ 正確</li>
+        <li class="list-group-item {% if r.student_answer == 'False' %}list-group-item-info{% endif %}">❌ 錯誤</li>
+      </ul>
+    {% endif %}
+
+    <p>
+      {% if r.is_correct %}
+        <span class="badge bg-success">✔️ 答對</span>
+      {% else %}
+        <span class="badge bg-danger">❌ 答錯</span>
+      {% endif %}
+      <span class="ms-2">正確答案：<strong>{{ r.question.correct_answer }}</strong></span>
+      <span class="ms-3">💡 知識概念：{{ r.question.concept }}</span>
+    </p>
+    <div class="mt-2">
+      <strong>解析：</strong>
+      <p class="text-muted">{{ r.question.explanation }}</p>
+    </div>
+    <hr>
+  </div>
+{% endfor %}
+
+    <a href="{% url 'lecture_list' %}" class="btn btn-outline-secondary">🔙 返回單元總覽</a>
+  </div>
+</div>
+</body>
+</html>

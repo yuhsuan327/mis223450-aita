@@ -1,0 +1,31 @@
+<!-- student_directory.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>選擇學生查詢作答紀錄</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  {% include 'navbar.html' %}
+
+  <div class="container mt-5">
+    <div class="card p-4 shadow">
+      <h3 class="mb-4 text-primary">📋 選擇學生查看作答紀錄</h3>
+      {% if students %}
+        <ul class="list-group">
+  {% for s in students %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <span>{{ s.user.username }}</span>
+      <a href="{% url 'student_submissions' s.id %}" class="btn btn-outline-primary btn-sm">查看紀錄</a>
+    </li>
+  {% endfor %}
+</ul>
+
+      {% else %}
+        <p class="text-muted">尚無學生資料</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

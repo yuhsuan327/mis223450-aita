@@ -1,0 +1,56 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'dashboard' %}">AI小助教</a>
+    
+    <!-- 🔽 漢堡選單按鈕（小螢幕用） -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- 🔽 導覽列內容區塊 -->
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <ul class="navbar-nav me-auto">
+        {% if user.is_authenticated %}
+          {% if user.profile.role == 'teacher' %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'create_course' %}">新增課程</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'course_list' %}">課程總覽</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'lecture_list' %}">單元總覽</a></li>
+
+            <!-- ✅ Dropdown：作答紀錄 -->
+            <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">作答紀錄</a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'lecture_list' %}">依單元查詢</a></li>
+                <li><a class="dropdown-item" href="{% url 'student_directory' %}">依學生查詢</a></li>
+              </ul>
+            </li>
+
+          {% elif user.profile.role == 'student' %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'lecture_list' %}">課程摘要</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'student_report' %}">作答紀錄</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'progress_report' %}">學習報告</a></li>
+          {% endif %}
+        {% endif %}
+      </ul>
+
+      <!-- 🔒 右側登入登出 -->
+      <ul class="navbar-nav">
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="nav-link btn btn-link text-white border-0 p-0" style="text-decoration: none;">
+                登出 ({{ user.username }})
+              </button>
+            </form>
+          </li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">登入</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">註冊</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ✅ 加入 Bootstrap JavaScript 功能 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

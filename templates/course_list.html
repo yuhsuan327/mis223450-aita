@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>課程清單</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<!-- ✅ Navbar 導覽列 -->
+{% include 'navbar.html' %}
+
+
+
+<!-- ✅ 課程清單內容 -->
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h3 class="mb-4 text-primary">📚 所有課程清單</h3>
+
+    {% if courses %}
+      <ul class="list-group">
+        {% for course in courses %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="me-3">
+              <strong>{{ course.name }}</strong>
+              <div class="text-muted">🗓 {{ course.date }}</div>
+              {% if course.description %}
+                <div class="small">{{ course.description|truncatechars:60 }}</div>
+              {% endif %}
+            </div>
+            <div class="d-flex gap-2">
+              <a href="{% url 'course_detail' course.id %}" class="btn btn-outline-primary btn-sm">查看單元</a>
+              <a href="{% url 'edit_course' course.id %}" class="btn btn-outline-warning btn-sm">編輯</a>
+              <form method="post" action="{% url 'delete_course' course.id %}" onsubmit="return confirm('確定要刪除此課程嗎？');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm">刪除</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted">目前尚未建立任何課程，請前往「新增課程」進行建立。</p>
+    {% endif %}
+  </div>
+</div>
+
+
+</body>
+</html>

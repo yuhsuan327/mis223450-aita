@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>課程詳情</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<!-- ✅ Navbar 導覽列 -->
+{% include 'navbar.html' %}
+
+
+
+
+<!-- ✅ 主內容區塊 -->
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h3 class="mb-4 text-primary text-center">
+      📘 {{ lecture.title|default:"課程摘要" }}
+    </h3>
+
+    <div class="mb-4">
+  <label class="form-label fw-bold">課程摘要：</label>
+  {% if lecture.summary %}
+    <div class="form-control-plaintext">
+  {{ lecture.summary|linebreaksbr }}
+</div>
+  {% else %}
+    <p class="text-muted">⏳ 正在分析音檔內容，請稍候數秒後重新整理此頁。</p>
+  {% endif %}
+</div>
+
+
+    <div class="mb-4">
+      <label class="form-label fw-bold text-success">📋 測驗題目：</label>
+      <ul class="list-group">
+        {% for q in questions %}
+          <li class="list-group-item">{{ q.question_text }}</li>
+        {% empty %}
+          <li class="list-group-item text-muted">此課程尚未產生題目</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <a href="{% url 'quiz' lecture.id %}" class="btn btn-primary w-100">
+      ▶️ 開始作答
+    </a>
+  </div>
+</div>
+
+</body>
+</html>
