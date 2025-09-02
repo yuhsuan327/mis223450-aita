@@ -17,12 +17,16 @@ env/
 
 # Virtual env
 venv/
+__pycache__/
+*.pyc
+*.sqlite3
+*.log
 .env
 *.env
 
 # DB、暫存與媒體
-*.sqlite3
-*.log
+
+
 *.webm
 *.wav
 *.tmp

@@ -8,6 +8,8 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 import json
+from django.views.decorators.csrf import csrf_exempt
+import io, uuid
 
 from .models import Lecture, Question, Student, Submission, Course, Profile
 from .forms import (
@@ -361,22 +363,56 @@ def edit_summary(request, lecture_id):
 
 @login_required
 def view_student_report_by_teacher(request, student_id):
-    if request.user.profile.role != 'teacher':
-        return HttpResponseForbidden("只有老師能查看學生報告")
-    
     student = get_object_or_404(Student, id=student_id)
     submissions = Submission.objects.filter(student=student)
+
+    # 📊 基本統計
     total = submissions.count()
     correct = submissions.filter(is_correct=True).count()
-    accuracy = (correct / total * 100) if total else 0
-    wrong = submissions.filter(is_correct=False).values('question__question_text').annotate(count=Count('id')).order_by('-count')[:5]
+    wrong_count = total - correct
+    accuracy = round((correct / total * 100), 2) if total else 0
 
-    return render(request, 'teacher_view_student_report.html', {
+    # ❗ 常錯題（最多五題）
+    wrong = (
+        submissions
+        .filter(is_correct=False)
+        .values('question__question_text')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:5]
+    )
+
+    # 📈 講次正確率資料
+    stats = (
+        submissions
+        .values('question__lecture__title')
+        .annotate(
+            total=Count('id'),
+            correct=Count('id', filter=Q(is_correct=True))
+        )
+        .order_by('question__lecture__date')
+    )
+    labels = [s['question__lecture__title'] for s in stats]
+    data = [round(s['correct'] / s['total'] * 100, 2) for s in stats]
+
+    # 💡 學習建議
+    avg_accuracy = sum(data) / len(data) if data else 0
+    if avg_accuracy < 60:
+        suggestion = "你的整體正確率偏低，建議加強基本練習。"
+    elif avg_accuracy < 85:
+        suggestion = "表現尚可，可針對錯誤單元加強複習。"
+    else:
+        suggestion = "表現優異，請持續保持！"
+
+    return render(request, 'progress_report.html', {
         'student': student,
         'total': total,
         'correct': correct,
-        'accuracy': round(accuracy, 2),
+        'wrong_count': wrong_count,
+        'accuracy': accuracy,
         'wrong': wrong,
+        'labels': labels,
+        'data': data,
+        'suggestion': suggestion,
     })
 
 @login_required
@@ -555,6 +591,7 @@ def progress_report(request):
         'suggestion': suggestion,
     })
 
+
 import tempfile
 from django.http import JsonResponse
 from django.core.files import File
@@ -601,3 +638,70 @@ def record_and_process(request, course_id):
     )
 
     return JsonResponse({'success': True})
+
+def submission_detail(request, lecture_id, student_id):
+    lecture = get_object_or_404(Lecture, id=lecture_id)
+    student = get_object_or_404(Student, id=student_id)
+    submissions = Submission.objects.filter(student=student, question__lecture=lecture).select_related('question')
+
+    return render(request, 'submission_result.html', {
+        'lecture': lecture,
+        'student': student,
+        'results': submissions,
+    })
+
+
+
+from .ai_modules import process_transcript_and_generate_quiz, process_audio_and_generate_quiz,transcribe_with_whisper
+import uuid
+@csrf_exempt
+def live_chunk_upload(request):
+    if request.method == 'POST':
+        audio_chunk = request.FILES.get('audio_chunk')
+        lecture_title = request.POST.get('lecture_title')
+        course_id = request.POST.get('course_id')
+
+        if not (audio_chunk and lecture_title and course_id):
+            return JsonResponse({'error': '缺少必要欄位'}, status=400)
+
+        lecture, _ = Lecture.objects.get_or_create(title=lecture_title, course_id=course_id)
+
+        # ✅ 注意：Windows 下不要 delete=True，Whisper會讀不到檔案
+        with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp:
+            for chunk in audio_chunk.chunks():
+                tmp.write(chunk)
+            tmp_path = tmp.name  # 不要用 tmp.name 以外的東西
+
+        print("✅ Whisper 轉錄開始")
+        try:
+            text = transcribe_with_whisper(tmp_path)
+            print("✅ Whisper 轉錄成功")
+        except Exception as e:
+            print("❌ Whisper 轉錄錯誤:", e)
+            text = ""
+
+        if text:
+            lecture.transcript = (lecture.transcript or '') + '\n' + text
+            lecture.save()
+
+        return JsonResponse({'transcript': text, 'lecture_id': lecture.id})
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def finalize_transcript_summary_quiz(request, lecture_id):
+    lecture = Lecture.objects.get(id=lecture_id)
+
+    if not lecture.transcript:
+        return JsonResponse({"error": "Transcript not found"}, status=404)
+
+    # ✅ 接收前端傳來的題目數量
+    try:
+        data = json.loads(request.body)
+        num_mcq = int(data.get("num_mcq", 3))
+        num_tf = int(data.get("num_tf", 0))
+    except Exception as e:
+        print("❌ 題目數量解析錯誤", e)
+        num_mcq, num_tf = 3, 0  # 預設值
+
+    process_transcript_and_generate_quiz(lecture, num_mcq=num_mcq, num_tf=num_tf)
+    return JsonResponse({"status": "ok"})

@@ -21,6 +21,7 @@
               <th>作答題數</th>
               <th>正確題數</th>
               <th>正確率</th>
+              <th>查看詳情</th>
             </tr>
           </thead>
           <tbody>
@@ -30,6 +31,9 @@
                 <td>{{ data.total }}</td>
                 <td>{{ data.correct }}</td>
                 <td>{{ data.accuracy }}%</td>
+                <td>
+                  <a href="{% url 'submission_detail' lecture.id data.student.id %}" class="btn btn-sm btn-outline-primary">查看詳情</a>
+                </td>
               </tr>
             {% endfor %}
           </tbody>

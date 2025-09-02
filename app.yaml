@@ -1,0 +1,18 @@
+runtime: python310
+
+entrypoint: gunicorn system.wsgi --bind 0.0.0.0:$PORT
+
+instance_class: F2  # 可以省略這行，預設 F1
+
+env_variables:
+  DJANGO_SETTINGS_MODULE: "system.settings"
+  SECRET_KEY: "o%r(i1&&!gv-f875*)(ullzc%4^(@4*kvof^_f9p-a^vv(9=xm"
+  DEBUG: "False"
+  ALLOWED_HOSTS: ".appspot.com"
+  OPENAI_API_KEY: ${OPENAI_API_KEY}
+handlers:
+- url: /static
+  static_dir: static/
+
+- url: /.*
+  script: auto

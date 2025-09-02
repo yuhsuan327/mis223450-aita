@@ -62,5 +62,10 @@ DATABASES = {
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-ALLOWED_HOSTS = ['mis223450.com']  # 或 ['*'] 初期測試用
+#ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.10']
+ALLOWED_HOSTS = ['*']
 DEBUG = False  # 上線請設為 False
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_ROOT = BASE_DIR / 'media'

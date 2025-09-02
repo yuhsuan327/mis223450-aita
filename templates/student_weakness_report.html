@@ -1,11 +1,44 @@
-<h2>學生弱點診斷報告</h2>
-<p>學生姓名：{{ student.name }}</p>
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card p-4 shadow">
+    <h3 class="mb-4 text-primary">📋 作答紀錄 - {{ lecture.title }}</h3>
 
-<h3>待加強知識點：</h3>
-<ul>
-  {% for w in weaknesses %}
-    <li>{{ w.question__concept }} (錯誤次數：{{ w.wrong_count }} 次)</li>
-  {% empty %}
-    <li>目前沒有弱點紀錄</li>
-  {% endfor %}
-</ul>
+    {% for student, records in student_records.items %}
+      <div class="mb-4">
+        <h5>👤 {{ student.user.username }}</h5>
+        <table class="table table-bordered table-striped">
+          <thead class="table-light">
+            <tr>
+              <th>題目</th>
+              <th>學生作答</th>
+              <th>是否正確</th>
+              <th>正確答案</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in records %}
+              <tr>
+                <td>{{ r.question.question_text|truncatechars:30 }}</td>
+                <td>{{ r.student_answer }}</td>
+                <td>
+                  {% if r.is_correct %}
+                    <span class="badge bg-success">✔️ 正確</span>
+                  {% else %}
+                    <span class="badge bg-danger">❌ 錯誤</span>
+                  {% endif %}
+                </td>
+                <td>{{ r.question.correct_answer }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% empty %}
+      <p class="text-muted">目前尚無作答資料。</p>
+    {% endfor %}
+
+    <a href="{% url 'lecture_list' %}" class="btn btn-outline-secondary">返回單元列表</a>
+  </div>
+</div>
+{% endblock %}

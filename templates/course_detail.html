@@ -2,47 +2,46 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>
-    {% if course %}{{ course.name }} - 課程詳情{% else %}課程詳情{% endif %}
-  </title>
+  <title>{% if course %}{{ course.name }} - 課程詳情{% else %}課程詳情{% endif %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 
 {% include 'navbar.html' %}
 
-
-
-<!-- ✅ 主體區塊 -->
-<div class="container mt-5">
+<div class="container-sm py-5">
   {% if course %}
-    <div class="card p-4 shadow">
-      <h3 class="mb-3 text-primary">{{ course.name }}</h3>
-      <p class="text-muted mb-1">🗓 日期：{{ course.date }}</p>
-      <p class="mb-4">📖 {{ course.description|default:"（此課程尚無簡介）" }}</p>
+    <!-- 📘 課程基本資料 -->
+    <div class="card shadow-sm p-4 mb-4">
+      <h3 class="text-primary">{{ course.name }}</h3>
+      <p class="text-muted">🗓 日期：{{ course.date }}</p>
+      <p class="mb-0">📖 {{ course.description|default:"（此課程尚無簡介）" }}</p>
+    </div>
 
-      <!-- ✅ 上傳音檔 -->
-      <h5 class="text-success mb-3">🎤 上傳單元音檔並產生摘要及測驗考題</h5>
+    <!-- 🔊 上傳音檔表單 -->
+    <div class="card shadow-sm p-4 mb-4">
+      <h5 class="text-success">🎤 上傳音檔並產生摘要及測驗考題</h5>
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-3">
-        <label for="lecture_title" class="form-label">單元名稱：</label>
-        <input type="text" name="lecture_title" id="lecture_title" class="form-control" required>
-      </div>
+          <label for="lecture_title" class="form-label">單元名稱</label>
+          <input type="text" name="lecture_title" id="lecture_title" class="form-control" required>
+        </div>
         <div class="mb-3">
-          <label for="id_audio_file" class="form-label">選擇音檔：</label>
+          <label for="id_audio_file" class="form-label">選擇音檔</label>
           <input type="file" name="audio_file" id="id_audio_file" class="form-control" required>
         </div>
 
-        <!-- 🎯 題型選擇區塊（新增在 lecture_title 下方） -->
+        <!-- 題型 -->
         <div class="row mb-3">
-          <div class="col-6 pe-1">
+          <div class="col-md-6">
             <label for="num_mcq" class="form-label">選擇題數量</label>
             <input type="number" name="num_mcq" id="num_mcq" class="form-control" value="5" min="0">
           </div>
-           <div class="col-6 ps-1">
+          <div class="col-md-6">
             <label for="num_tf" class="form-label">是非題數量</label>
-            <input type="number" name="num_tf" id="num_tf" class="form-control" value="0"  min="0">
+            <input type="number" name="num_tf" id="num_tf" class="form-control" value="0" min="0">
           </div>
         </div>
 
@@ -50,13 +49,12 @@
       </form>
     </div>
 
-     <!-- 🟦 直接錄音卡片 -->
-  <!-- 🎙️ 直接錄音卡片 -->
-<div class="card p-4 shadow mt-4">
-  <h5 class="text-danger">🎙️ 直接錄音產生考題</h5>
-  
+<!-- 🎙️ 錄音卡片 -->
+<div class="card shadow-sm p-4 mb-4">
+  <h5 class="text-danger">🎙️ 直接錄音並產生摘要及測驗考題</h5>
+
   <div class="mb-2">
-    <label for="lecture_title_record" class="form-label">單元名稱：</label>
+    <label for="lecture_title_record" class="form-label">單元名稱</label>
     <input type="text" id="lecture_title_record" class="form-control" placeholder="請輸入單元名稱">
   </div>
 
@@ -71,65 +69,34 @@
     </div>
   </div>
 
-  <div class="d-flex gap-2">
+  <!-- 錄音提示 -->
+  <div id="recordStatus" class="alert alert-warning d-none">
+    🔴 錄音中…請開始講課（<span id="recordTime">00:00</span>）
+  </div>
+
+  <div class="d-flex flex-wrap gap-2">
     <button id="startRecord" class="btn btn-danger">🔴 開始錄音</button>
     <button id="stopRecord" class="btn btn-secondary" disabled>⏹ 停止錄音</button>
   </div>
 </div>
 
-<script>
-let mediaRecorder;
-let audioChunks = [];
-
-document.getElementById("startRecord").onclick = async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  mediaRecorder = new MediaRecorder(stream);
-  audioChunks = [];
-
-  mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-  mediaRecorder.onstop = async () => {
-    const blob = new Blob(audioChunks, { type: 'audio/webm' });
-    const formData = new FormData();
-    formData.append('audio_data', blob, 'recorded.webm');
-    formData.append('lecture_title', document.getElementById('lecture_title_record').value);
-    formData.append('num_mcq', document.getElementById('num_mcq_record').value);
-    formData.append('num_tf', document.getElementById('num_tf_record').value);
-
-    const courseId = "{{ course.id }}";
-    await fetch(`/course/${courseId}/record/`, {
-        method: 'POST',
-          body: formData
-          });
-
-          window.location.reload();
-          };
-
-  mediaRecorder.start();
-  document.getElementById("startRecord").disabled = true;
-  document.getElementById("stopRecord").disabled = false;
-};
-
-document.getElementById("stopRecord").onclick = () => {
-  mediaRecorder.stop();
-  document.getElementById("stopRecord").disabled = true;
-};
-</script>
-
-    <!-- ✅ 所有講次列表 -->
-    <div class="card mt-4 p-4 shadow">
-      <h5 class="mb-3 text-primary">📚 已上傳單元</h5>
+    <!-- 📚 已上傳單元清單 -->
+    <div class="card shadow-sm p-4">
+      <h5 class="text-primary mb-3">📚 已上傳單元</h5>
       {% if lectures %}
         <ul class="list-group">
           {% for lec in lectures %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <strong>單元 #{{ lec.id }}</strong> - {{ lec.date|date:"Y-m-d" }}<br>
-                {{ lec.summary|truncatechars:40|default:"(尚無摘要)" }}
+            <li class="list-group-item">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div class="mb-2 mb-md-0">
+                  <strong>單元 #{{ lec.id }}</strong> - {{ lec.date|date:"Y-m-d" }}<br>
+                  <span class="text-muted">{{ lec.summary|truncatechars:40|default:"(尚無摘要)" }}</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <a href="{% url 'lecture_detail' lec.id %}" class="btn btn-outline-primary btn-sm">查看摘要</a>
+                  <a href="{% url 'edit_lecture_title' lec.id %}" class="btn btn-outline-info btn-sm">更改單元名稱</a>
+                </div>
               </div>
-              <div class="d-flex justify-content-end gap-2">
-              <a href="{% url 'lecture_detail' lec.id %}" class="btn btn-outline-primary btn-sm">查看摘要</a>
-              <a href="{% url 'edit_lecture_title' lec.id %}" class="btn btn-outline-info btn-sm">更改單元名稱</a>
-            </div>
             </li>
           {% endfor %}
         </ul>
@@ -138,13 +105,79 @@ document.getElementById("stopRecord").onclick = () => {
       {% endif %}
     </div>
   {% else %}
-    <div class="alert alert-warning shadow text-center p-4">
+    <!-- ⚠ 尚未選擇課程 -->
+    <div class="alert alert-warning text-center p-4 shadow-sm">
       <h4 class="mb-3">⚠ 尚未指定課程</h4>
       <p>請從課程總覽中選擇一門課程來查看單元與操作功能。</p>
       <a href="{% url 'lecture_list' %}" class="btn btn-outline-primary">返回課程總覽</a>
     </div>
   {% endif %}
 </div>
+
+<!-- 🎙️ 錄音功能 JS -->
+<script>
+let mediaRecorder, stream, lectureId = null;
+let transcript = '';
+let chunkInterval;
+
+document.getElementById("startRecord").onclick = async () => {
+  const title = document.getElementById("lecture_title_record").value.trim();
+  const courseId = "{{ course.id }}";
+
+  if (!title) return alert("⚠ 請輸入單元名稱");
+
+  stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+
+  mediaRecorder.ondataavailable = async (e) => {
+    const formData = new FormData();
+    formData.append('audio_chunk', e.data, 'chunk.webm');
+    formData.append('lecture_title', title);
+    formData.append('course_id', courseId);
+
+    const res = await fetch('/api/live_chunk_upload/', { method: 'POST', body: formData });
+    const result = await res.json();
+
+    if (result.transcript) {
+      transcript += result.transcript + '\n';
+      document.getElementById("transcriptPreview").innerText = transcript;
+    }
+    if (result.lecture_id) lectureId = result.lecture_id;
+  };
+
+  mediaRecorder.start();
+  chunkInterval = setInterval(() => {
+    if (mediaRecorder.state === 'recording') {
+      mediaRecorder.requestData();
+    }
+  }, 15000);
+
+  document.getElementById("startRecord").disabled = true;
+  document.getElementById("stopRecord").disabled = false;
+};
+
+document.getElementById("stopRecord").onclick = async () => {
+  clearInterval(chunkInterval);
+  mediaRecorder.stop();
+  stream.getTracks().forEach(t => t.stop());
+
+  document.getElementById("stopRecord").disabled = true;
+
+if (lectureId) {
+  await fetch(`/api/finalize_transcript_summary_quiz/${lectureId}/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      num_mcq: document.getElementById("num_mcq_record").value,
+      num_tf: document.getElementById("num_tf_record").value,
+    })
+  });
+  location.href = `/lecture/${lectureId}/`;
+}
+};
+</script>
 
 </body>
 </html>

@@ -4,68 +4,94 @@
   <meta charset="UTF-8">
   <title>教學平台首頁</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
+  <style>
+    body {
+      background: linear-gradient(to right, #f8f9fa, #e3f2fd);
+      min-height: 100vh;
+    }
+    .dashboard-title {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #0d6efd;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      color: #495057;
+    }
+    .card-title {
+      font-weight: bold;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      transition: 0.3s;
+    }
+  </style>
 </head>
-<body class="bg-light">
+<body>
 
-<div class="container mt-5">
-  <div class="text-center mb-4">
-    <h2>👋 歡迎回來，{{ user.username }}</h2>
+<!-- ✅ 導覽列 -->
+{% include 'navbar.html' %}
+
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <h2 class="dashboard-title">👋 歡迎回來，{{ user.username }}</h2>
     <p class="text-muted">您的身份是 <strong>{{ user.profile.get_role_display }}</strong></p>
   </div>
 
   {% if user.profile.role == 'teacher' %}
-  <!-- 🧑‍🏫 老師專區 -->
+  <!-- 🧑‍🏫 老師儀表板 -->
   <div class="row g-4">
     <div class="col-md-4">
-      <div class="card border-primary shadow-sm">
-        <div class="card-body">
+      <div class="card border-primary shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
           <h5 class="card-title">➕ 新增課程</h5>
-          <p class="card-text text-muted">建立新的課程並開始上傳單元</p>
-          <a href="{% url 'create_course' %}" class="btn btn-primary w-100">前往</a>
+          <p class="card-text text-muted">建立新的課程內容</p>
+          <a href="{% url 'create_course' %}" class="btn btn-primary mt-auto">建立課程</a>
         </div>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="card border-success shadow-sm">
-        <div class="card-body">
+      <div class="card border-success shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
           <h5 class="card-title">📚 課程總覽</h5>
-          <p class="card-text text-muted">查看您建立的所有課程</p>
-          <a href="{% url 'course_list' %}" class="btn btn-success w-100">查看</a>
+          <p class="card-text text-muted">管理您建立的所有課程與單元</p>
+          <a href="{% url 'course_list' %}" class="btn btn-success mt-auto">查看課程</a>
         </div>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="card border-info shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">📊 學生報告</h5>
-          <p class="card-text text-muted">分析學生作答與弱點</p>
-          <a href="{% url 'lecture_list' %}" class="btn btn-info w-100">進入</a>
+      <div class="card border-info shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">📊 學生表現分析</h5>
+          <p class="card-text text-muted">查看學生答題紀錄與分析報告</p>
+          <a href="{% url 'student_directory' %}" class="btn btn-info mt-auto">查看報告</a>
         </div>
       </div>
     </div>
   </div>
 
   {% elif user.profile.role == 'student' %}
-  <!-- 🧑‍🎓 學生專區 -->
+  <!-- 🧑‍🎓 學生儀表板 -->
   <div class="row g-4">
     <div class="col-md-6">
-      <div class="card border-primary shadow-sm">
-        <div class="card-body">
+      <div class="card border-primary shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
           <h5 class="card-title">🧾 單元總覽</h5>
-          <p class="card-text text-muted">查看單元摘要與開始作答</p>
-          <a href="{% url 'lecture_list' %}" class="btn btn-primary w-100">開始學習</a>
+          <p class="card-text text-muted">查看各講次摘要並開始作答練習</p>
+          <a href="{% url 'lecture_list' %}" class="btn btn-primary mt-auto">開始學習</a>
         </div>
       </div>
     </div>
 
     <div class="col-md-6">
-      <div class="card border-success shadow-sm">
-        <div class="card-body">
+      <div class="card border-success shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
           <h5 class="card-title">📈 我的學習報告</h5>
-          <p class="card-text text-muted">分析正確率與常錯題</p>
-          <a href="{% url 'student_report' %}" class="btn btn-success w-100">查看報告</a>
+          <p class="card-text text-muted">查看作答成績、正確率與學習建議</p>
+          <a href="{% url 'student_report' %}" class="btn btn-success mt-auto">查看報告</a>
         </div>
       </div>
     </div>

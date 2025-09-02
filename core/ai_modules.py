@@ -232,3 +232,36 @@ def process_audio_and_generate_quiz(lecture_id, num_mcq=3, num_tf=0):
             parse_and_store_questions(final_summary, tf_data, lecture, 'tf')
         else:
             print("⚠️ 沒有回傳 TF 題目")
+
+def process_transcript_and_generate_quiz(lecture, client=None, num_mcq=3, num_tf=0):
+    if not client:
+        client = create_openai_client()
+
+    transcript = lecture.transcript
+    if not transcript:
+        print("❌ 無轉錄內容，無法生成摘要與題目")
+        return
+
+    print("📝 開始摘要處理")
+    chunks = dynamic_split(transcript)
+    summaries = [generate_summary_for_chunk(client, c, i, len(chunks)) for i, c in enumerate(chunks)]
+
+    final_summary = combine_summaries(client, summaries)
+    lecture.summary = final_summary
+    lecture.save()
+
+    print("🧠 開始產生考題")
+
+    if num_mcq > 0:
+        mcq_data = generate_quiz(client, final_summary, num_mcq)
+        if mcq_data:
+            parse_and_store_questions(final_summary, mcq_data, lecture, 'mcq')
+        else:
+            print("⚠️ 沒有回傳 MCQ 題目")
+
+    if num_tf > 0:
+        tf_data = generate_tf_questions(client, final_summary, num_tf)
+        if tf_data:
+            parse_and_store_questions(final_summary, tf_data, lecture, 'tf')
+        else:
+            print("⚠️ 沒有回傳 TF 題目")

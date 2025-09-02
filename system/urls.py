@@ -7,7 +7,8 @@ from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.upload_lecture, name='upload_lecture'),
+    #path('', views.upload_lecture, name='upload_lecture'),
+    path('', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('lecture/<int:lecture_id>/', views.lecture_detail, name='lecture_detail'),
     path('lecture/<int:lecture_id>/quiz/', views.quiz, name='quiz'),
     path("student/report/", views.student_report, name="student_report"),
@@ -35,6 +36,10 @@ urlpatterns = [
     path('lecture/<int:lecture_id>/edit_title/', views.edit_lecture_title, name='edit_lecture_title'),
     path('progress/', views.progress_report, name='progress_report'),
     path('course/<int:course_id>/record/', views.record_and_process, name='record_and_process'),
-
+    path('lecture/<int:lecture_id>/student/<int:student_id>/', views.submission_detail, name='submission_detail'),
+    #path('progress/<int:student_id>/', views.student_progress_report_admin, name='student_progress_report_admin'),
+    path('student/<int:student_id>/report/', views.view_student_report_by_teacher, name='teacher_student_report'),
+    path("api/live_chunk_upload/", views.live_chunk_upload, name="live_chunk_upload"),
+    path("api/finalize_transcript_summary_quiz/<int:lecture_id>/", views.finalize_transcript_summary_quiz, name="finalize_transcript_summary_quiz"),
 
 ]
