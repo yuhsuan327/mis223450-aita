@@ -5,6 +5,8 @@ from django.contrib.auth import views as auth_views
 from core.views import register
 from django.contrib.auth.views import LogoutView
 
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     #path('', views.upload_lecture, name='upload_lecture'),
